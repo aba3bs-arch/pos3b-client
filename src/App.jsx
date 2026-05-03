@@ -1,30 +1,27 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 
-const POS_Elite = () => {
-  const [categoriaActiva, setCategoriaActiva] = useState('FAVORITOS');
+const POS_Corporativo = () => {
+  const [vistaActual, setVistaActual] = useState('Ventas');
   const [carrito, setCarrito] = useState([]);
-  const [busqueda, setBusqueda] = useState('');
   const [sucursal, setSucursal] = useState('3B2');
 
-  const misSucursales = ['3B2', '3B3', '3B5', '3B6', '3B7', '3B9', '3B10', 'Fusion'];
-  const categorias = ['FAVORITOS', 'ABARROTES', 'BEBIDAS', 'BOTANAS', 'CIGARROS'];
-
-  // Base de datos de productos con imágenes y stock
-  const productos = [
-    { id: 1, nombre: 'Gomitas', precio: 20, cat: 'FAVORITOS', img: 'https://images.unsplash.com/photo-1582050041567-9cfdd330d545?w=200', stock: 12 },
-    { id: 2, nombre: 'Mazapan Original', precio: 12, cat: 'FAVORITOS', img: 'https://images.unsplash.com/photo-1599599810694-b5b37304c041?w=200', stock: 504 },
-    { id: 3, nombre: 'Salsa Valentina', precio: 2, cat: 'FAVORITOS', img: 'https://images.unsplash.com/photo-1626078297492-b7ca55294561?w=200', stock: 106 },
-    { id: 4, nombre: 'Agua Grande 1L', precio: 16, cat: 'BEBIDAS', img: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=200', stock: 20 },
-    { id: 5, nombre: 'Marlboro Rojo', precio: 80, cat: 'CIGARROS', img: 'https://images.unsplash.com/photo-1526413232644-8a40f03cc03b?w=200', stock: 15 },
-    { id: 6, nombre: 'Duritos Navarro', precio: 17, cat: 'BOTANAS', img: 'https://images.unsplash.com/photo-1621447509323-5705b2df6f9b?w=200', stock: 60 },
+  const menuOpciones = [
+    { nombre: 'Inicio', icono: '🏠' },
+    { nombre: 'Ventas', icono: '📑' },
+    { nombre: 'Cotizaciones', icono: '📄' },
+    { nombre: 'Compras', icono: '🛒' },
+    { nombre: 'Productos', icono: '📦' },
+    { nombre: 'Clientes', icono: '👤' },
+    { nombre: 'Usuarios', icono: '👥' },
+    { nombre: 'Proveedores', icono: '🚛' },
+    { nombre: 'Consultas', icono: '📁' },
   ];
 
-  const productosFiltrados = useMemo(() => {
-    return productos.filter(p => 
-      (categoriaActiva === 'FAVORITOS' || p.cat === categoriaActiva) &&
-      p.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    );
-  }, [categoriaActiva, busqueda]);
+  const productos = [
+    { id: 1, nombre: 'Gomitas', precio: 20, img: 'https://images.unsplash.com/photo-1582050041567-9cfdd330d545?w=100' },
+    { id: 2, nombre: 'Mazapan Original', precio: 12, img: 'https://images.unsplash.com/photo-1599599810694-b5b37304c041?w=100' },
+    { id: 3, nombre: 'Salsa Valentina', precio: 7, img: 'https://images.unsplash.com/photo-1626078297492-b7ca55294561?w=100' },
+  ];
 
   const total = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
 
@@ -38,121 +35,144 @@ const POS_Elite = () => {
   };
 
   return (
-    <div style={styles.container}>
-      {/* HEADER SUPERIOR ESTILO SICAR */}
-      <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <div style={styles.logoBadge}>AM</div>
-          <h2 style={styles.headerTitle}>Ventas - Abarrotes Las 3B</h2>
+    <div style={styles.appContainer}>
+      {/* MENU LATERAL (SIDEBAR) */}
+      <aside style={styles.sidebar}>
+        <div style={styles.sidebarHeader}>
+          <div style={styles.logoCircle}>3B</div>
+          <div>
+            <div style={styles.sucursalNombre}>{sucursal}</div>
+            <div style={styles.sucursalUbicacion}>NOGALES, SONORA</div>
+          </div>
         </div>
-        <div style={styles.headerRight}>
-          <select value={sucursal} onChange={(e) => setSucursal(e.target.value)} style={styles.sucursalSelect}>
-            {misSucursales.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <div style={styles.userBadge}>VENTA: DEFAULT</div>
-        </div>
-      </header>
 
-      {/* BARRA DE CATEGORÍAS */}
-      <nav style={styles.navBar}>
-        {categorias.map(cat => (
-          <button 
-            key={cat} 
-            onClick={() => setCategoriaActiva(cat)}
-            style={{...styles.navBtn, borderBottom: categoriaActiva === cat ? '3px solid #1a73e8' : 'none', color: categoriaActiva === cat ? '#1a73e8' : '#5f6368'}}
-          >
-            {cat}
-          </button>
-        ))}
-      </nav>
-
-      <div style={styles.mainContent}>
-        {/* LADO IZQUIERDO: PRODUCTOS */}
-        <section style={styles.productArea}>
-          <div style={styles.searchBar}>
-            <input 
-              type="text" 
-              placeholder="🔍 Buscar producto..." 
-              style={styles.searchInput}
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-            />
-          </div>
-          <div style={styles.grid}>
-            {productosFiltrados.map(p => (
-              <div key={p.id} onClick={() => agregarAlCarrito(p)} style={styles.card}>
-                <img src={p.img} alt={p.nombre} style={styles.cardImg} />
-                <div style={styles.cardInfo}>
-                  <span style={styles.cardPrice}>${p.precio}.00</span>
-                  <span style={styles.cardName}>{p.nombre}</span>
-                  <span style={styles.cardStock}>{p.stock} piezas</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* LADO DERECHO: CARRITO */}
-        <aside style={styles.cartArea}>
-          <div style={styles.cartHeader}>🛒 Carrito de Ventas</div>
-          <div style={styles.cartItems}>
-            {carrito.length === 0 ? (
-              <div style={styles.emptyCart}>Agregar productos a tu carrito</div>
-            ) : (
-              carrito.map(item => (
-                <div key={item.id} style={styles.cartItem}>
-                  <span>{item.nombre} x{item.cantidad}</span>
-                  <strong>${item.precio * item.cantidad}.00</strong>
-                </div>
-              ))
-            )}
-          </div>
-          <div style={styles.cartFooter}>
-            <div style={styles.totalBox}>
-              <span>TOTAL MXN</span>
-              <span style={styles.totalText}>${total}.00</span>
-            </div>
-            <button style={styles.payBtn} disabled={carrito.length === 0}>
-              FINALIZAR VENTA [F10]
+        <nav style={styles.sidebarNav}>
+          {menuOpciones.map((opcion) => (
+            <button
+              key={opcion.nombre}
+              onClick={() => setVistaActual(opcion.nombre)}
+              style={{
+                ...styles.navItem,
+                backgroundColor: vistaActual === opcion.nombre ? '#e8f0fe' : 'transparent',
+                color: vistaActual === opcion.nombre ? '#1a73e8' : '#5f6368',
+                fontWeight: vistaActual === opcion.nombre ? 'bold' : 'normal',
+              }}
+            >
+              <span style={styles.navIcon}>{opcion.icono}</span>
+              {opcion.nombre}
             </button>
+          ))}
+        </nav>
+
+        <div style={styles.sidebarFooter}>
+          <button style={styles.btnLogout}>🚪 Cerrar Sesión</button>
+          <div style={styles.userInfo}>
+            <div style={styles.userAvatar}>M</div>
+            <div>
+              <div style={styles.userName}>Misael</div>
+              <div style={styles.userRole}>Administrador</div>
+            </div>
           </div>
-        </aside>
-      </div>
+        </div>
+      </aside>
+
+      {/* CONTENIDO PRINCIPAL */}
+      <main style={styles.mainContent}>
+        <header style={styles.topBar}>
+          <h2 style={styles.viewTitle}>{vistaActual}</h2>
+          <div style={styles.topBarActions}>
+            <div style={styles.statusOnline}>🟢 Sistema Operativo</div>
+          </div>
+        </header>
+
+        <div style={styles.workspace}>
+          {vistaActual === 'Ventas' ? (
+            <div style={styles.ventasLayout}>
+              <section style={styles.productSection}>
+                <div style={styles.grid}>
+                  {productos.map(p => (
+                    <div key={p.id} onClick={() => agregarAlCarrito(p)} style={styles.productCard}>
+                      <img src={p.img} alt={p.nombre} style={styles.productImg} />
+                      <div style={styles.productInfo}>
+                        <div style={styles.productPrice}>${p.precio}.00</div>
+                        <div style={styles.productName}>{p.nombre}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <aside style={styles.ticketSection}>
+                <div style={styles.ticketHeader}>DETALLE DE VENTA</div>
+                <div style={styles.ticketItems}>
+                  {carrito.map(item => (
+                    <div key={item.id} style={styles.ticketItem}>
+                      <span>{item.nombre} x{item.cantidad}</span>
+                      <strong>${item.precio * item.cantidad}</strong>
+                    </div>
+                  ))}
+                </div>
+                <div style={styles.ticketFooter}>
+                  <div style={styles.totalRow}>
+                    <span>TOTAL</span>
+                    <span style={styles.totalValue}>${total}.00</span>
+                  </div>
+                  <button style={styles.btnCobrar} disabled={carrito.length === 0}>
+                    COBRAR AHORA
+                  </button>
+                </div>
+              </aside>
+            </div>
+          ) : (
+            <div style={styles.placeholderView}>
+              <h3>Módulo de {vistaActual}</h3>
+              <p>Esta sección está en desarrollo para la próxima actualización.</p>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 };
 
 const styles = {
-  container: { height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f1f3f4', fontFamily: 'Segoe UI, Roboto, sans-serif' },
-  header: { display: 'flex', justifyContent: 'space-between', padding: '10px 20px', backgroundColor: '#1a73e8', color: 'white', alignItems: 'center' },
-  headerLeft: { display: 'flex', alignItems: 'center', gap: '15px' },
-  logoBadge: { backgroundColor: '#fff', color: '#1a73e8', padding: '5px 10px', borderRadius: '50%', fontWeight: 'bold' },
-  headerTitle: { fontSize: '18px', margin: 0 },
-  headerRight: { display: 'flex', gap: '15px', alignItems: 'center' },
-  sucursalSelect: { padding: '5px', borderRadius: '4px', border: 'none' },
-  userBadge: { backgroundColor: 'rgba(255,255,255,0.2)', padding: '5px 10px', borderRadius: '4px', fontSize: '12px' },
-  navBar: { display: 'flex', backgroundColor: '#fff', borderBottom: '1px solid #dadce0', padding: '0 10px' },
-  navBtn: { padding: '15px 20px', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' },
-  mainContent: { display: 'flex', flex: 1, overflow: 'hidden' },
-  productArea: { flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column' },
-  searchBar: { marginBottom: '20px' },
-  searchInput: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #dadce0', fontSize: '16px' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '15px' },
-  card: { backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #dadce0', cursor: 'pointer', overflow: 'hidden', textAlign: 'center', transition: 'box-shadow 0.2s' },
-  cardImg: { width: '100%', height: '120px', objectFit: 'cover' },
-  cardInfo: { padding: '10px', display: 'flex', flexDirection: 'column', gap: '5px' },
-  cardPrice: { fontWeight: 'bold', fontSize: '18px', color: '#202124' },
-  cardName: { fontSize: '13px', color: '#5f6368' },
-  cardStock: { fontSize: '11px', color: '#1a73e8', fontWeight: 'bold' },
-  cartArea: { width: '350px', backgroundColor: '#fff', borderLeft: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
-  cartHeader: { padding: '20px', borderBottom: '1px solid #dadce0', fontWeight: 'bold', color: '#1a73e8' },
-  cartItems: { flex: 1, padding: '15px', overflowY: 'auto' },
-  cartItem: { display: 'flex', justifyContent: 'space-between', marginBottom: '10px', borderBottom: '1px solid #f1f3f4', paddingBottom: '5px' },
-  emptyCart: { textAlign: 'center', color: '#9aa0a6', marginTop: '50px' },
-  cartFooter: { padding: '20px', backgroundColor: '#f8f9fa', borderTop: '1px solid #dadce0' },
-  totalBox: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
-  totalText: { fontSize: '28px', fontWeight: 'bold', color: '#1a73e8' },
-  payBtn: { width: '100%', padding: '15px', backgroundColor: '#1a73e8', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px' }
+  appContainer: { display: 'flex', height: '100vh', backgroundColor: '#f8f9fa', fontFamily: 'Segoe UI, sans-serif' },
+  sidebar: { width: '260px', backgroundColor: '#ffffff', borderRight: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
+  sidebarHeader: { padding: '25px 20px', borderBottom: '1px solid #f1f3f4', display: 'flex', alignItems: 'center', gap: '12px' },
+  logoCircle: { width: '45px', height: '45px', backgroundColor: '#1a73e8', borderRadius: '50%', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '18px' },
+  sucursalNombre: { fontWeight: 'bold', color: '#202124', fontSize: '15px' },
+  sucursalUbicacion: { fontSize: '11px', color: '#70757a' },
+  sidebarNav: { flex: 1, padding: '10px' },
+  navItem: { display: 'flex', alignItems: 'center', width: '100%', padding: '12px 15px', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', marginBottom: '4px', fontSize: '14px', transition: '0.2s' },
+  navIcon: { marginRight: '12px', fontSize: '18px' },
+  sidebarFooter: { padding: '20px', borderTop: '1px solid #f1f3f4' },
+  btnLogout: { width: '100%', padding: '10px', backgroundColor: 'transparent', border: '1px solid #dadce0', borderRadius: '6px', cursor: 'pointer', color: '#d93025', fontWeight: 'bold', marginBottom: '15px' },
+  userInfo: { display: 'flex', alignItems: 'center', gap: '10px' },
+  userAvatar: { width: '35px', height: '35px', backgroundColor: '#e8f0fe', color: '#1a73e8', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' },
+  userName: { fontSize: '13px', fontWeight: 'bold', color: '#202124' },
+  userRole: { fontSize: '11px', color: '#70757a' },
+  mainContent: { flex: 1, display: 'flex', flexDirection: 'column' },
+  topBar: { height: '64px', backgroundColor: '#ffffff', borderBottom: '1px solid #dadce0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 25px' },
+  viewTitle: { fontSize: '20px', margin: 0, color: '#1a73e8' },
+  statusOnline: { fontSize: '12px', color: '#1e8e3e', fontWeight: 'bold' },
+  workspace: { flex: 1, overflow: 'hidden' },
+  ventasLayout: { display: 'flex', height: '100%' },
+  productSection: { flex: 1, padding: '25px', overflowY: 'auto' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '20px' },
+  productCard: { backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #dadce0', cursor: 'pointer', overflow: 'hidden', textAlign: 'center', transition: '0.2s' },
+  productImg: { width: '100%', height: '110px', objectFit: 'cover' },
+  productInfo: { padding: '12px' },
+  productPrice: { fontWeight: 'bold', fontSize: '18px', color: '#202124' },
+  productName: { fontSize: '12px', color: '#5f6368', marginTop: '4px' },
+  ticketSection: { width: '380px', backgroundColor: '#ffffff', borderLeft: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
+  ticketHeader: { padding: '20px', fontWeight: 'bold', borderBottom: '1px solid #f1f3f4', color: '#1a73e8', letterSpacing: '1px' },
+  ticketItems: { flex: 1, padding: '20px', overflowY: 'auto' },
+  ticketItem: { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8f9fa' },
+  ticketFooter: { padding: '25px', backgroundColor: '#f8f9fa' },
+  totalRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+  totalValue: { fontSize: '32px', fontWeight: 'bold', color: '#1a73e8' },
+  btnCobrar: { width: '100%', padding: '18px', backgroundColor: '#1a73e8', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(26, 115, 232, 0.3)' },
+  placeholderView: { padding: '50px', textAlign: 'center', color: '#70757a' }
 };
 
-export default POS_Elite;
+export default POS_Corporativo;
