@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
 
-const POS_Corporativo = () => {
-  const [vistaActual, setVistaActual] = useState('Ventas');
+const POS_Sistema_Andres = () => {
+  const [vistaActual, setVistaActual] = useState('Inicio');
   const [carrito, setCarrito] = useState([]);
   const [sucursal, setSucursal] = useState('3B2');
 
+  // Configuración de los módulos principales
   const menuOpciones = [
-    { nombre: 'Inicio', icono: '🏠' },
-    { nombre: 'Ventas', icono: '📑' },
-    { nombre: 'Cotizaciones', icono: '📄' },
-    { nombre: 'Compras', icono: '🛒' },
-    { nombre: 'Productos', icono: '📦' },
-    { nombre: 'Clientes', icono: '👤' },
-    { nombre: 'Usuarios', icono: '👥' },
-    { nombre: 'Proveedores', icono: '🚛' },
-    { nombre: 'Consultas', icono: '📁' },
+    { nombre: 'Inicio', icono: '🏠', color: '#1a73e8' },
+    { nombre: 'Ventas', icono: '📑', color: '#1e8e3e' },
+    { nombre: 'Cotizaciones', icono: '📄', color: '#f9ab00' },
+    { nombre: 'Compras', icono: '🛒', color: '#d93025' },
+    { nombre: 'Productos', icono: '📦', color: '#8e24aa' },
+    { nombre: 'Clientes', icono: '👤', color: '#00acc1' },
+    { nombre: 'Usuarios', icono: '👥', color: '#5f6368' },
+    { nombre: 'Proveedores', icono: '🚛', color: '#fb8c00' },
+    { nombre: 'Consultas', icono: '📁', color: '#455a64' },
   ];
 
+  // Datos de ejemplo para el módulo de Ventas
   const productos = [
     { id: 1, nombre: 'Gomitas', precio: 20, img: 'https://images.unsplash.com/photo-1582050041567-9cfdd330d545?w=100' },
     { id: 2, nombre: 'Mazapan Original', precio: 12, img: 'https://images.unsplash.com/photo-1599599810694-b5b37304c041?w=100' },
@@ -36,7 +38,7 @@ const POS_Corporativo = () => {
 
   return (
     <div style={styles.appContainer}>
-      {/* MENU LATERAL (SIDEBAR) */}
+      {/* MENU LATERAL */}
       <aside style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
           <div style={styles.logoCircle}>3B</div>
@@ -65,11 +67,10 @@ const POS_Corporativo = () => {
         </nav>
 
         <div style={styles.sidebarFooter}>
-          <button style={styles.btnLogout}>🚪 Cerrar Sesión</button>
           <div style={styles.userInfo}>
-            <div style={styles.userAvatar}>M</div>
+            <div style={styles.userAvatar}>A</div>
             <div>
-              <div style={styles.userName}>Misael</div>
+              <div style={styles.userName}>Andres</div>
               <div style={styles.userRole}>Administrador</div>
             </div>
           </div>
@@ -86,7 +87,24 @@ const POS_Corporativo = () => {
         </header>
 
         <div style={styles.workspace}>
-          {vistaActual === 'Ventas' ? (
+          {/* VISTA DE INICIO (MODULOS AL CENTRO) */}
+          {vistaActual === 'Inicio' && (
+            <div style={styles.inicioGrid}>
+              {menuOpciones.filter(o => o.nombre !== 'Inicio').map(op => (
+                <button 
+                  key={op.nombre} 
+                  style={styles.moduloCard}
+                  onClick={() => setVistaActual(op.nombre)}
+                >
+                  <div style={{...styles.moduloIcon, color: op.color}}>{op.icono}</div>
+                  <div style={styles.moduloNombre}>{op.nombre}</div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* VISTA DE VENTAS */}
+          {vistaActual === 'Ventas' && (
             <div style={styles.ventasLayout}>
               <section style={styles.productSection}>
                 <div style={styles.grid}>
@@ -105,12 +123,14 @@ const POS_Corporativo = () => {
               <aside style={styles.ticketSection}>
                 <div style={styles.ticketHeader}>DETALLE DE VENTA</div>
                 <div style={styles.ticketItems}>
-                  {carrito.map(item => (
-                    <div key={item.id} style={styles.ticketItem}>
-                      <span>{item.nombre} x{item.cantidad}</span>
-                      <strong>${item.precio * item.cantidad}</strong>
-                    </div>
-                  ))}
+                  {carrito.length === 0 ? <p style={{textAlign:'center', color:'#999'}}>Ticket vacío</p> : 
+                    carrito.map(item => (
+                      <div key={item.id} style={styles.ticketItem}>
+                        <span>{item.nombre} x{item.cantidad}</span>
+                        <strong>${item.precio * item.cantidad}</strong>
+                      </div>
+                    ))
+                  }
                 </div>
                 <div style={styles.ticketFooter}>
                   <div style={styles.totalRow}>
@@ -123,10 +143,13 @@ const POS_Corporativo = () => {
                 </div>
               </aside>
             </div>
-          ) : (
+          )}
+
+          {/* OTRAS VISTAS (PLACEHOLDER) */}
+          {vistaActual !== 'Inicio' && vistaActual !== 'Ventas' && (
             <div style={styles.placeholderView}>
-              <h3>Módulo de {vistaActual}</h3>
-              <p>Esta sección está en desarrollo para la próxima actualización.</p>
+              <h3>Panel de {vistaActual}</h3>
+              <p>Módulo en construcción para el equipo de Abarrotes Las 3B.</p>
             </div>
           )}
         </div>
@@ -136,43 +159,46 @@ const POS_Corporativo = () => {
 };
 
 const styles = {
-  appContainer: { display: 'flex', height: '100vh', backgroundColor: '#f8f9fa', fontFamily: 'Segoe UI, sans-serif' },
+  appContainer: { display: 'flex', height: '100vh', backgroundColor: '#f1f3f4', fontFamily: 'Segoe UI, sans-serif' },
   sidebar: { width: '260px', backgroundColor: '#ffffff', borderRight: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
   sidebarHeader: { padding: '25px 20px', borderBottom: '1px solid #f1f3f4', display: 'flex', alignItems: 'center', gap: '12px' },
   logoCircle: { width: '45px', height: '45px', backgroundColor: '#1a73e8', borderRadius: '50%', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '18px' },
-  sucursalNombre: { fontWeight: 'bold', color: '#202124', fontSize: '15px' },
+  sucursalNombre: { fontWeight: 'bold', fontSize: '15px' },
   sucursalUbicacion: { fontSize: '11px', color: '#70757a' },
   sidebarNav: { flex: 1, padding: '10px' },
-  navItem: { display: 'flex', alignItems: 'center', width: '100%', padding: '12px 15px', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', marginBottom: '4px', fontSize: '14px', transition: '0.2s' },
+  navItem: { display: 'flex', alignItems: 'center', width: '100%', padding: '12px 15px', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', marginBottom: '4px', fontSize: '14px' },
   navIcon: { marginRight: '12px', fontSize: '18px' },
   sidebarFooter: { padding: '20px', borderTop: '1px solid #f1f3f4' },
-  btnLogout: { width: '100%', padding: '10px', backgroundColor: 'transparent', border: '1px solid #dadce0', borderRadius: '6px', cursor: 'pointer', color: '#d93025', fontWeight: 'bold', marginBottom: '15px' },
   userInfo: { display: 'flex', alignItems: 'center', gap: '10px' },
-  userAvatar: { width: '35px', height: '35px', backgroundColor: '#e8f0fe', color: '#1a73e8', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' },
-  userName: { fontSize: '13px', fontWeight: 'bold', color: '#202124' },
+  userAvatar: { width: '35px', height: '35px', backgroundColor: '#1a73e8', color: 'white', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' },
+  userName: { fontSize: '13px', fontWeight: 'bold' },
   userRole: { fontSize: '11px', color: '#70757a' },
   mainContent: { flex: 1, display: 'flex', flexDirection: 'column' },
   topBar: { height: '64px', backgroundColor: '#ffffff', borderBottom: '1px solid #dadce0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 25px' },
-  viewTitle: { fontSize: '20px', margin: 0, color: '#1a73e8' },
+  viewTitle: { fontSize: '20px', color: '#1a73e8' },
   statusOnline: { fontSize: '12px', color: '#1e8e3e', fontWeight: 'bold' },
-  workspace: { flex: 1, overflow: 'hidden' },
+  workspace: { flex: 1, overflowY: 'auto' },
+  inicioGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '25px', padding: '60px', maxWidth: '1200px', margin: '0 auto' },
+  moduloCard: { backgroundColor: 'white', borderRadius: '16px', padding: '40px 20px', border: '1px solid #dadce0', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+  moduloIcon: { fontSize: '48px' },
+  moduloNombre: { fontWeight: 'bold', fontSize: '16px', color: '#3c4043' },
   ventasLayout: { display: 'flex', height: '100%' },
   productSection: { flex: 1, padding: '25px', overflowY: 'auto' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '20px' },
-  productCard: { backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #dadce0', cursor: 'pointer', overflow: 'hidden', textAlign: 'center', transition: '0.2s' },
+  productCard: { backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #dadce0', cursor: 'pointer', overflow: 'hidden', textAlign: 'center' },
   productImg: { width: '100%', height: '110px', objectFit: 'cover' },
   productInfo: { padding: '12px' },
-  productPrice: { fontWeight: 'bold', fontSize: '18px', color: '#202124' },
-  productName: { fontSize: '12px', color: '#5f6368', marginTop: '4px' },
+  productPrice: { fontWeight: 'bold', fontSize: '18px' },
+  productName: { fontSize: '12px', color: '#5f6368' },
   ticketSection: { width: '380px', backgroundColor: '#ffffff', borderLeft: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
-  ticketHeader: { padding: '20px', fontWeight: 'bold', borderBottom: '1px solid #f1f3f4', color: '#1a73e8', letterSpacing: '1px' },
+  ticketHeader: { padding: '20px', fontWeight: 'bold', borderBottom: '1px solid #f1f3f4', color: '#1a73e8' },
   ticketItems: { flex: 1, padding: '20px', overflowY: 'auto' },
   ticketItem: { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8f9fa' },
   ticketFooter: { padding: '25px', backgroundColor: '#f8f9fa' },
   totalRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
   totalValue: { fontSize: '32px', fontWeight: 'bold', color: '#1a73e8' },
-  btnCobrar: { width: '100%', padding: '18px', backgroundColor: '#1a73e8', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(26, 115, 232, 0.3)' },
-  placeholderView: { padding: '50px', textAlign: 'center', color: '#70757a' }
+  btnCobrar: { width: '100%', padding: '18px', backgroundColor: '#1a73e8', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' },
+  placeholderView: { padding: '100px', textAlign: 'center', color: '#70757a' }
 };
 
-export default POS_Corporativo;
+export default POS_Sistema_Andres;
