@@ -1,44 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
-const POS_Sistema_Andres = () => {
+const POS_Andres_Elite = () => {
   const [vistaActual, setVistaActual] = useState('Inicio');
-  const [carrito, setCarrito] = useState([]);
+  const [busqueda, setBusqueda] = useState('');
   const [sucursal, setSucursal] = useState('3B2');
 
-  // Configuración de los módulos principales
   const menuOpciones = [
     { nombre: 'Inicio', icono: '🏠', color: '#1a73e8' },
     { nombre: 'Ventas', icono: '📑', color: '#1e8e3e' },
-    { nombre: 'Cotizaciones', icono: '📄', color: '#f9ab00' },
-    { nombre: 'Compras', icono: '🛒', color: '#d93025' },
     { nombre: 'Productos', icono: '📦', color: '#8e24aa' },
     { nombre: 'Clientes', icono: '👤', color: '#00acc1' },
-    { nombre: 'Usuarios', icono: '👥', color: '#5f6368' },
-    { nombre: 'Proveedores', icono: '🚛', color: '#fb8c00' },
-    { nombre: 'Consultas', icono: '📁', color: '#455a64' },
+    { nombre: 'Compras', icono: '🛒', color: '#d93025' },
   ];
 
-  // Datos de ejemplo para el módulo de Ventas
-  const productos = [
-    { id: 1, nombre: 'Gomitas', precio: 20, img: 'https://images.unsplash.com/photo-1582050041567-9cfdd330d545?w=100' },
-    { id: 2, nombre: 'Mazapan Original', precio: 12, img: 'https://images.unsplash.com/photo-1599599810694-b5b37304c041?w=100' },
-    { id: 3, nombre: 'Salsa Valentina', precio: 7, img: 'https://images.unsplash.com/photo-1626078297492-b7ca55294561?w=100' },
+  // Base de datos extendida para el módulo de Productos
+  const inventario = [
+    { id: 'P1', unidad: 'PZA', nombre: 'plato desechable', precio: 2.00, stock: 0, img: 'https://via.placeholder.com/60?text=Plato' },
+    { id: 'v4', unidad: 'PZA', nombre: 'vaso desechable', precio: 2.00, stock: 0, img: 'https://via.placeholder.com/60?text=Vaso' },
+    { id: '64', unidad: 'PZA', nombre: 'Apotex Omeprazol 2 pcs', precio: 10.00, stock: 11, img: 'https://via.placeholder.com/60?text=Med' },
+    { id: '7500810049181', unidad: 'PZA', nombre: 'gallefut', precio: 10.00, stock: 4, img: 'https://via.placeholder.com/60?text=Galleta' },
+    { id: '7501030409854', unidad: 'PZA', nombre: 'NITO DUO 124G', precio: 30.00, stock: 3, img: 'https://via.placeholder.com/60?text=Nito' },
+    { id: '7501055305704', unidad: 'CAJA', nombre: 'COCA COLA LIGHT RETORNABLE 500...', precio: 20.00, stock: 6, img: 'https://via.placeholder.com/60?text=Coke' },
   ];
 
-  const total = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
-
-  const agregarAlCarrito = (p) => {
-    const existe = carrito.find(i => i.id === p.id);
-    if (existe) {
-      setCarrito(carrito.map(i => i.id === p.id ? { ...i, cantidad: i.cantidad + 1 } : i));
-    } else {
-      setCarrito([...carrito, { ...p, cantidad: 1 }]);
-    }
-  };
+  const productosFiltrados = useMemo(() => {
+    return inventario.filter(p => 
+      p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
+      p.id.includes(busqueda)
+    );
+  }, [busqueda]);
 
   return (
     <div style={styles.appContainer}>
-      {/* MENU LATERAL */}
+      {/* SIDEBAR */}
       <aside style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
           <div style={styles.logoCircle}>3B</div>
@@ -47,25 +41,13 @@ const POS_Sistema_Andres = () => {
             <div style={styles.sucursalUbicacion}>NOGALES, SONORA</div>
           </div>
         </div>
-
         <nav style={styles.sidebarNav}>
-          {menuOpciones.map((opcion) => (
-            <button
-              key={opcion.nombre}
-              onClick={() => setVistaActual(opcion.nombre)}
-              style={{
-                ...styles.navItem,
-                backgroundColor: vistaActual === opcion.nombre ? '#e8f0fe' : 'transparent',
-                color: vistaActual === opcion.nombre ? '#1a73e8' : '#5f6368',
-                fontWeight: vistaActual === opcion.nombre ? 'bold' : 'normal',
-              }}
-            >
-              <span style={styles.navIcon}>{opcion.icono}</span>
-              {opcion.nombre}
+          {menuOpciones.map((op) => (
+            <button key={op.nombre} onClick={() => setVistaActual(op.nombre)} style={{...styles.navItem, backgroundColor: vistaActual === op.nombre ? '#e8f0fe' : 'transparent', color: vistaActual === op.nombre ? '#1a73e8' : '#5f6368'}}>
+              <span style={styles.navIcon}>{op.icono}</span> {op.nombre}
             </button>
           ))}
         </nav>
-
         <div style={styles.sidebarFooter}>
           <div style={styles.userInfo}>
             <div style={styles.userAvatar}>A</div>
@@ -77,25 +59,19 @@ const POS_Sistema_Andres = () => {
         </div>
       </aside>
 
-      {/* CONTENIDO PRINCIPAL */}
+      {/* CONTENIDO */}
       <main style={styles.mainContent}>
         <header style={styles.topBar}>
           <h2 style={styles.viewTitle}>{vistaActual}</h2>
-          <div style={styles.topBarActions}>
-            <div style={styles.statusOnline}>🟢 Sistema Operativo</div>
-          </div>
+          <div style={styles.statusOnline}>🟢 Sistema Activo</div>
         </header>
 
         <div style={styles.workspace}>
-          {/* VISTA DE INICIO (MODULOS AL CENTRO) */}
+          {/* INICIO */}
           {vistaActual === 'Inicio' && (
             <div style={styles.inicioGrid}>
               {menuOpciones.filter(o => o.nombre !== 'Inicio').map(op => (
-                <button 
-                  key={op.nombre} 
-                  style={styles.moduloCard}
-                  onClick={() => setVistaActual(op.nombre)}
-                >
+                <button key={op.nombre} style={styles.moduloCard} onClick={() => setVistaActual(op.nombre)}>
                   <div style={{...styles.moduloIcon, color: op.color}}>{op.icono}</div>
                   <div style={styles.moduloNombre}>{op.nombre}</div>
                 </button>
@@ -103,53 +79,39 @@ const POS_Sistema_Andres = () => {
             </div>
           )}
 
-          {/* VISTA DE VENTAS */}
-          {vistaActual === 'Ventas' && (
-            <div style={styles.ventasLayout}>
-              <section style={styles.productSection}>
-                <div style={styles.grid}>
-                  {productos.map(p => (
-                    <div key={p.id} onClick={() => agregarAlCarrito(p)} style={styles.productCard}>
-                      <img src={p.img} alt={p.nombre} style={styles.productImg} />
-                      <div style={styles.productInfo}>
-                        <div style={styles.productPrice}>${p.precio}.00</div>
-                        <div style={styles.productName}>{p.nombre}</div>
+          {/* PRODUCTOS (ESTILO SICAR) */}
+          {vistaActual === 'Productos' && (
+            <div style={styles.productosContainer}>
+              <div style={styles.searchHeader}>
+                <div style={styles.searchWrapper}>
+                  <input 
+                    type="text" 
+                    placeholder="Buscar por nombre o código..." 
+                    style={styles.searchInput}
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                  />
+                  <button style={styles.filterBtn}>🧪</button>
+                </div>
+                <button style={styles.addBtn}>+</button>
+              </div>
+
+              <div style={styles.productList}>
+                {productosFiltrados.map(p => (
+                  <div key={p.id} style={styles.productRow}>
+                    <img src={p.img} alt={p.nombre} style={styles.prodImg} />
+                    <div style={styles.prodMainInfo}>
+                      <div style={styles.prodMeta}>
+                        <span style={styles.prodUnidad}>{p.unidad}</span>
+                        <span style={styles.prodId}>{p.id}</span>
                       </div>
+                      <div style={styles.prodNombre}>{p.nombre}</div>
+                      <div style={styles.prodStock}>{p.stock}</div>
                     </div>
-                  ))}
-                </div>
-              </section>
-
-              <aside style={styles.ticketSection}>
-                <div style={styles.ticketHeader}>DETALLE DE VENTA</div>
-                <div style={styles.ticketItems}>
-                  {carrito.length === 0 ? <p style={{textAlign:'center', color:'#999'}}>Ticket vacío</p> : 
-                    carrito.map(item => (
-                      <div key={item.id} style={styles.ticketItem}>
-                        <span>{item.nombre} x{item.cantidad}</span>
-                        <strong>${item.precio * item.cantidad}</strong>
-                      </div>
-                    ))
-                  }
-                </div>
-                <div style={styles.ticketFooter}>
-                  <div style={styles.totalRow}>
-                    <span>TOTAL</span>
-                    <span style={styles.totalValue}>${total}.00</span>
+                    <div style={styles.prodPrecio}>${p.precio.toFixed(2)}</div>
                   </div>
-                  <button style={styles.btnCobrar} disabled={carrito.length === 0}>
-                    COBRAR AHORA
-                  </button>
-                </div>
-              </aside>
-            </div>
-          )}
-
-          {/* OTRAS VISTAS (PLACEHOLDER) */}
-          {vistaActual !== 'Inicio' && vistaActual !== 'Ventas' && (
-            <div style={styles.placeholderView}>
-              <h3>Panel de {vistaActual}</h3>
-              <p>Módulo en construcción para el equipo de Abarrotes Las 3B.</p>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -160,45 +122,43 @@ const POS_Sistema_Andres = () => {
 
 const styles = {
   appContainer: { display: 'flex', height: '100vh', backgroundColor: '#f1f3f4', fontFamily: 'Segoe UI, sans-serif' },
-  sidebar: { width: '260px', backgroundColor: '#ffffff', borderRight: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
-  sidebarHeader: { padding: '25px 20px', borderBottom: '1px solid #f1f3f4', display: 'flex', alignItems: 'center', gap: '12px' },
-  logoCircle: { width: '45px', height: '45px', backgroundColor: '#1a73e8', borderRadius: '50%', color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '18px' },
-  sucursalNombre: { fontWeight: 'bold', fontSize: '15px' },
-  sucursalUbicacion: { fontSize: '11px', color: '#70757a' },
+  sidebar: { width: '260px', backgroundColor: '#fff', borderRight: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
+  sidebarHeader: { padding: '20px', borderBottom: '1px solid #f1f3f4', display: 'flex', gap: '10px', alignItems: 'center' },
+  logoCircle: { width: '40px', height: '40px', backgroundColor: '#1a73e8', borderRadius: '50%', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' },
+  sucursalNombre: { fontWeight: 'bold', fontSize: '14px' },
+  sucursalUbicacion: { fontSize: '10px', color: '#70757a' },
   sidebarNav: { flex: 1, padding: '10px' },
-  navItem: { display: 'flex', alignItems: 'center', width: '100%', padding: '12px 15px', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', marginBottom: '4px', fontSize: '14px' },
-  navIcon: { marginRight: '12px', fontSize: '18px' },
+  navItem: { display: 'flex', alignItems: 'center', width: '100%', padding: '12px', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', marginBottom: '5px' },
+  navIcon: { marginRight: '10px' },
   sidebarFooter: { padding: '20px', borderTop: '1px solid #f1f3f4' },
   userInfo: { display: 'flex', alignItems: 'center', gap: '10px' },
-  userAvatar: { width: '35px', height: '35px', backgroundColor: '#1a73e8', color: 'white', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' },
+  userAvatar: { width: '30px', height: '30px', backgroundColor: '#1a73e8', color: '#fff', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' },
   userName: { fontSize: '13px', fontWeight: 'bold' },
   userRole: { fontSize: '11px', color: '#70757a' },
   mainContent: { flex: 1, display: 'flex', flexDirection: 'column' },
-  topBar: { height: '64px', backgroundColor: '#ffffff', borderBottom: '1px solid #dadce0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 25px' },
-  viewTitle: { fontSize: '20px', color: '#1a73e8' },
-  statusOnline: { fontSize: '12px', color: '#1e8e3e', fontWeight: 'bold' },
+  topBar: { height: '60px', backgroundColor: '#fff', borderBottom: '1px solid #dadce0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' },
+  viewTitle: { fontSize: '18px', color: '#1a73e8' },
+  statusOnline: { fontSize: '11px', color: '#1e8e3e', fontWeight: 'bold' },
   workspace: { flex: 1, overflowY: 'auto' },
-  inicioGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '25px', padding: '60px', maxWidth: '1200px', margin: '0 auto' },
-  moduloCard: { backgroundColor: 'white', borderRadius: '16px', padding: '40px 20px', border: '1px solid #dadce0', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', transition: '0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
-  moduloIcon: { fontSize: '48px' },
-  moduloNombre: { fontWeight: 'bold', fontSize: '16px', color: '#3c4043' },
-  ventasLayout: { display: 'flex', height: '100%' },
-  productSection: { flex: 1, padding: '25px', overflowY: 'auto' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '20px' },
-  productCard: { backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #dadce0', cursor: 'pointer', overflow: 'hidden', textAlign: 'center' },
-  productImg: { width: '100%', height: '110px', objectFit: 'cover' },
-  productInfo: { padding: '12px' },
-  productPrice: { fontWeight: 'bold', fontSize: '18px' },
-  productName: { fontSize: '12px', color: '#5f6368' },
-  ticketSection: { width: '380px', backgroundColor: '#ffffff', borderLeft: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
-  ticketHeader: { padding: '20px', fontWeight: 'bold', borderBottom: '1px solid #f1f3f4', color: '#1a73e8' },
-  ticketItems: { flex: 1, padding: '20px', overflowY: 'auto' },
-  ticketItem: { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f8f9fa' },
-  ticketFooter: { padding: '25px', backgroundColor: '#f8f9fa' },
-  totalRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  totalValue: { fontSize: '32px', fontWeight: 'bold', color: '#1a73e8' },
-  btnCobrar: { width: '100%', padding: '18px', backgroundColor: '#1a73e8', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' },
-  placeholderView: { padding: '100px', textAlign: 'center', color: '#70757a' }
+  inicioGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', padding: '40px' },
+  moduloCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '30px', border: '1px solid #dadce0', cursor: 'pointer', textAlign: 'center' },
+  moduloIcon: { fontSize: '40px', marginBottom: '10px' },
+  moduloNombre: { fontWeight: 'bold' },
+  productosContainer: { padding: '20px', maxWidth: '800px', margin: '0 auto' },
+  searchHeader: { display: 'flex', gap: '10px', marginBottom: '20px' },
+  searchWrapper: { flex: 1, position: 'relative', display: 'flex', alignItems: 'center', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #dadce0', padding: '0 10px' },
+  searchInput: { flex: 1, padding: '12px', border: 'none', outline: 'none', fontSize: '14px' },
+  filterBtn: { background: 'none', border: 'none', cursor: 'pointer' },
+  addBtn: { backgroundColor: '#1e8e3e', color: '#fff', border: 'none', width: '45px', borderRadius: '8px', fontSize: '24px', cursor: 'pointer' },
+  productList: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  productRow: { display: 'flex', alignItems: 'center', backgroundColor: '#fff', padding: '15px', borderRadius: '12px', border: '1px solid #dadce0', gap: '15px' },
+  prodImg: { width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' },
+  prodMainInfo: { flex: 1 },
+  prodMeta: { fontSize: '11px', color: '#70757a', marginBottom: '2px' },
+  prodUnidad: { fontWeight: 'bold', marginRight: '8px', color: '#202124' },
+  prodNombre: { fontSize: '14px', color: '#202124', marginBottom: '2px' },
+  prodStock: { fontSize: '12px', color: '#9aa0a6' },
+  prodPrecio: { fontSize: '16px', fontWeight: 'bold', color: '#202124' }
 };
 
-export default POS_Sistema_Andres;
+export default POS_Andres_Elite;
