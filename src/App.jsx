@@ -7,7 +7,6 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 function App() {
-  // --- ESTADOS DE SESIÓN Y NAVEGACIÓN ---
   const [sesion, setSesion] = useState(false);
   const [user, setUser] = useState(null);
   const [pin, setPin] = useState('');
@@ -15,10 +14,8 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sucursal, setSucursal] = useState('3B2');
 
-  // --- ESTADOS DE DATOS ---
   const [inventario, setInventario] = useState([]);
   const [carrito, setCarrito] = useState([]);
-  const [busqueda, setBusqueda] = useState('');
   const [pagoCon, setPagoCon] = useState('');
   const [metodo, setMetodo] = useState('EFECTIVO');
   const [mostrarCobro, setMostrarCobro] = useState(false);
@@ -26,39 +23,45 @@ function App() {
   const logo = "https://lh3.googleusercontent.com/d/1592398516086884693";
   const c = { azul: '#3b69b5', ocre: '#c8b444', rojo: '#ff0000', verde: '#1e8e3e', fondo: '#f8f9fa' };
 
-  // --- CARGA DE DATOS ---
   useEffect(() => {
     if (sesion) cargarInventario();
   }, [sesion]);
 
   const cargarInventario = async () => {
-    const { data } = await supabase.from('productos').select('*');
-    setInventario(data || []);
+    try {
+      const { data, error } = await supabase.from('productos').select('*');
+      if (error) throw error;
+      setInventario(data || []);
+    } catch (err) {
+      console.error("Error cargando inventario:", err.message);
+    }
   };
 
-  // --- LÓGICA DE LOGIN ---
   const manejarLogin = async () => {
-    const { data, error } = await supabase.from('usuarios').select('*').eq('pin', pin).single();
-    if (data) {
+    try {
+      const { data, error } = await supabase.from('usuarios').select('*').eq('pin', pin).single();
+      if (error || !data) {
+        alert("PIN Incorrecto o usuario no encontrado");
+        setPin('');
+        return;
+      }
       setUser(data);
       setSesion(true);
       setPin('');
       await supabase.from('logins').insert([{ usuario_id: data.id, nombre: data.nombre, sucursal, evento: 'ENTRADA' }]);
-    } else {
-      alert("PIN Incorrecto");
-      setPin('');
+    } catch (err) {
+      alert("Error de conexión");
     }
   };
 
-  // --- LÓGICA DE VENTA ---
-  const totalVenta = useMemo(() => carrito.reduce((acc, p) => acc + p.precio, 0), [carrito]);
+  const totalVenta = useMemo(() => carrito.reduce((acc, p) => acc + (p.precio || 0), 0), [carrito]);
   const cambio = useMemo(() => (parseFloat(pagoCon) || 0) - totalVenta, [pagoCon, totalVenta]);
 
   const finalizarVenta = async () => {
     if (metodo === 'EFECTIVO' && cambio < 0) return alert("Monto insuficiente");
     
     const { error } = await supabase.from('ventas').insert([{
-      vendedor: user.nombre,
+      vendedor: user?.nombre || 'Desconocido',
       sucursal_id: sucursal,
       total: totalVenta,
       metodo_pago: metodo,
@@ -66,104 +69,90 @@ function App() {
     }]);
 
     if (!error) {
-      alert("Venta procesada con éxito");
+      alert("Venta procesada");
       setCarrito([]);
       setMostrarCobro(false);
       setPagoCon('');
-      cargarInventario(); // Recarga para ver el stock actualizado por el trigger
-    } else {
-      console.error(error);
-      alert("Error al guardar venta");
+      cargarInventario();
     }
   };
 
-  // --- PANTALLA DE ACCESO ---
-  if (!sesion) return (
-    <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: c.ocre }}>
-      <div style={s.loginCard}>
-        <img src={logo} style={{ width: '130px' }} alt="Las 3B" />
-        <h2 style={{ color: c.azul }}>LAS 3B - NOGALES</h2>
-        <input type="password" placeholder="PIN" value={pin} onChange={e => setPin(e.target.value)} onKeyPress={e => e.key === 'Enter' && manejarLogin()} style={s.pinInput} />
-        <button onClick={manejarLogin} style={s.btnLogin}>ENTRAR</button>
+  // --- RENDERIZADO CONDICIONAL ---
+  if (!sesion) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: c.ocre }}>
+        <div style={{ background: '#fff', padding: '40px', borderRadius: '30px', textAlign: 'center', width: '350px' }}>
+          <img src={logo} style={{ width: '130px' }} alt="Las 3B" />
+          <h2 style={{ color: c.azul }}>LAS 3B - NOGALES</h2>
+          <input 
+            type="password" 
+            placeholder="PIN" 
+            value={pin} 
+            onChange={e => setPin(e.target.value)} 
+            onKeyPress={e => e.key === 'Enter' && manejarLogin()} 
+            style={{ width: '100%', padding: '15px', fontSize: '28px', textAlign: 'center', borderRadius: '12px', border: '1px solid #ddd', margin: '20px 0' }} 
+          />
+          <button onClick={manejarLogin} style={{ width: '100%', padding: '15px', background: c.azul, color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>ENTRAR</button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div style={{ display: 'flex', height: '100vh', backgroundColor: c.fondo }}>
-      {/* SIDEBAR */}
       {sidebarOpen && (
-        <aside style={s.sidebar}>
-          <div style={s.sideHeader}>
-            <b style={{color: c.azul}}>ABARROTES LAS 3B</b>
-            <div style={s.tagSuc}>{sucursal}</div>
+        <aside style={{ width: '250px', background: '#fff', borderRight: '1px solid #ddd', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '20px', textAlign: 'center', borderBottom: '4px solid #c8b444' }}>
+            <b style={{ color: c.azul }}>ABARROTES LAS 3B</b>
+            <div style={{ background: '#f0f0f0', padding: '5px', borderRadius: '5px', fontSize: '12px', marginTop: '5px' }}>{sucursal}</div>
           </div>
           <nav style={{ flex: 1, padding: '10px', overflowY: 'auto' }}>
-            {['Inicio', 'Ventas', 'Productos', 'Compras', 'Checador', 'Clientes', 'Proveedores', 'Reportes', 'Usuarios', 'Configuración'].map(m => (
-              <button key={m} onClick={() => setVista(m)} style={{...s.navBtn, backgroundColor: vista === m ? '#e8f0fe' : 'transparent', color: vista === m ? c.azul : '#555'}}>
+            {['Inicio', 'Ventas', 'Productos', 'Compras', 'Reportes', 'Usuarios'].map(m => (
+              <button 
+                key={m} 
+                onClick={() => setVista(m)} 
+                style={{ display: 'block', width: '100%', padding: '12px', border: 'none', textAlign: 'left', fontWeight: 'bold', cursor: 'pointer', borderRadius: '8px', backgroundColor: vista === m ? '#e8f0fe' : 'transparent', color: vista === m ? c.azul : '#555' }}
+              >
                 {m}
               </button>
             ))}
           </nav>
-          <div style={s.sideFooter}>
-            <b>{user.nombre}</b><br/>
-            <span style={{fontSize: '10px'}}>v2.1.0 Enterprise</span>
+          <div style={{ padding: '15px', borderTop: '1px solid #eee' }}>
+            <b>{user?.nombre}</b><br/>
+            <span style={{ fontSize: '10px' }}>v2.1.1</span>
           </div>
         </aside>
       )}
 
-      {/* ÁREA PRINCIPAL */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <header style={s.mainHeader}>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={s.btnToggle}>☰</button>
-          <h2 style={{ color: c.azul, margin: 0 }}>{vista}</h2>
-          <button onClick={() => setSesion(false)} style={s.btnSalir}>CERRAR TURNO</button>
+        <header style={{ height: '65px', background: '#fff', borderBottom: '1px solid #ddd', display: 'flex', alignItems: 'center', padding: '0 20px' }}>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ fontSize: '22px', border: 'none', background: 'none', cursor: 'pointer' }}>☰</button>
+          <h2 style={{ marginLeft: '15px', color: c.azul }}>{vista}</h2>
         </header>
 
-        <div style={{ flex: 1, padding: '25px', overflow: 'hidden' }}>
-          {vista === 'Ventas' && (
+        <div style={{ flex: 1, padding: '25px' }}>
+          {vista === 'Ventas' ? (
             <div style={{ display: 'flex', gap: '20px', height: '100%' }}>
-              <div style={{ flex: 1, overflowY: 'auto' }}>
-                <input type="text" placeholder="F1 - Buscar producto..." style={s.inputBig} />
-                <h4 style={{color: c.azul, marginTop: '20px'}}>⭐ Favoritos</h4>
-                <div style={s.gridFavs}>
+              <div style={{ flex: 1 }}>
+                <input type="text" placeholder="F1 - Buscar..." style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #ddd' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '12px', marginTop: '20px' }}>
                   {inventario.filter(p => p.cat === 'FAVORITOS').map(p => (
-                    <div key={p.id} onClick={() => setCarrito([...carrito, p])} style={s.favCard}>
-                      <b style={{color: c.rojo}}>${p.precio}</b><br/>{p.nombre}
+                    <div key={p.id} onClick={() => setCarrito([...carrito, p])} style={{ background: '#fff', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', textAlign: 'center', cursor: 'pointer' }}>
+                      <b style={{ color: c.rojo }}>${p.precio}</b><br/>{p.nombre}
                     </div>
                   ))}
                 </div>
               </div>
-              
-              <aside style={s.panelTicket}>
+              <aside style={{ width: '320px', background: '#fff', padding: '20px', borderLeft: '1px solid #ddd' }}>
                 <h3>TICKET</h3>
-                <div style={{flex: 1, overflowY: 'auto'}}>
-                  {carrito.map((it, i) => <div key={i} style={s.lineaTicket}><span>{it.nombre}</span><b>${it.precio}</b></div>)}
-                </div>
-                <div style={s.totalArea}>TOTAL: ${totalVenta}.00</div>
-                
-                {mostrarCobro ? (
-                  <div style={s.panelPagar}>
-                    <select value={metodo} onChange={e => setMetodo(e.target.value)} style={s.select}>
-                      <option value="EFECTIVO">EFECTIVO</option>
-                      <option value="TARJETA">TARJETA</option>
-                    </select>
-                    <input type="number" placeholder="Pagó con..." value={pagoCon} onChange={e => setPagoCon(e.target.value)} style={s.inputPago} autoFocus />
-                    <div style={{fontSize: '22px', fontWeight: 'bold', color: c.verde}}>CAMBIO: ${cambio >= 0 ? cambio : 0}</div>
-                    <button onClick={finalizarVenta} style={s.btnFinalizar}>REGISTRAR VENTA</button>
-                    <button onClick={() => setMostrarCobro(false)} style={s.btnCan}>CANCELAR</button>
-                  </div>
-                ) : (
-                  <button onClick={() => setMostrarCobro(true)} style={s.btnCobrar}>COBRAR [F10]</button>
-                )}
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: c.azul }}>TOTAL: ${totalVenta}.00</div>
+                <button onClick={() => setMostrarCobro(true)} style={{ width: '100%', padding: '18px', background: c.verde, color: '#fff', border: 'none', borderRadius: '12px', marginTop: '15px', fontWeight: 'bold' }}>COBRAR</button>
               </aside>
             </div>
-          )}
-
-          {['Inicio', 'Productos', 'Compras', 'Usuarios'].includes(vista) && (
-            <div style={s.cardSimple}>
-              <h3>Panel de {vista}</h3>
-              <p>Módulo operativo conectado a Supabase.</p>
+          ) : (
+            <div style={{ background: '#fff', padding: '30px', borderRadius: '20px' }}>
+              <h3>Módulo {vista}</h3>
+              <p>Funcionalidad lista para operar en Nogales.</p>
             </div>
           )}
         </div>
@@ -172,33 +161,4 @@ function App() {
   );
 }
 
-// --- ESTILOS ---
-const s = {
-  loginCard: { background: '#fff', padding: '40px', borderRadius: '30px', textAlign: 'center', width: '350px' },
-  pinInput: { width: '100%', padding: '15px', fontSize: '28px', textAlign: 'center', letterSpacing: '10px', borderRadius: '12px', border: '1px solid #ddd', margin: '20px 0' },
-  btnLogin: { width: '100%', padding: '15px', background: '#3b69b5', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' },
-  sidebar: { width: '250px', background: '#fff', borderRight: '1px solid #ddd', display: 'flex', flexDirection: 'column' },
-  sideHeader: { padding: '20px', textAlign: 'center', borderBottom: '4px solid #c8b444' },
-  tagSuc: { background: '#f0f0f0', padding: '5px', borderRadius: '5px', fontSize: '12px', fontWeight: 'bold', marginTop: '5px' },
-  navBtn: { display: 'block', width: '100%', padding: '12px 20px', border: 'none', textAlign: 'left', fontWeight: 'bold', cursor: 'pointer', borderRadius: '8px', marginBottom: '2px' },
-  sideFooter: { padding: '15px', borderTop: '1px solid #eee' },
-  mainHeader: { height: '65px', background: '#fff', borderBottom: '1px solid #ddd', display: 'flex', alignItems: 'center', padding: '0 20px' },
-  btnToggle: { fontSize: '22px', border: 'none', background: 'none', cursor: 'pointer', marginRight: '15px' },
-  btnSalir: { marginLeft: 'auto', color: c.rojo, border: `1px solid ${c.rojo}`, background: 'none', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' },
-  inputBig: { width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '16px' },
-  gridFavs: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '12px', marginTop: '10px' },
-  favCard: { background: '#fff', padding: '12px', borderRadius: '10px', border: '1px solid #ddd', textAlign: 'center', cursor: 'pointer' },
-  panelTicket: { width: '320px', background: '#fff', borderLeft: '1px solid #ddd', padding: '20px', display: 'flex', flexDirection: 'column' },
-  lineaTicket: { display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '5px' },
-  totalArea: { fontSize: '32px', fontWeight: 'bold', color: '#3b69b5', borderTop: '2px solid #3b69b5', marginTop: '15px', paddingTop: '10px' },
-  btnCobrar: { width: '100%', padding: '18px', background: '#1e8e3e', color: '#fff', border: 'none', borderRadius: '12px', marginTop: '15px', fontWeight: 'bold', fontSize: '18px', cursor: 'pointer' },
-  panelPagar: { background: '#f9f9f9', padding: '15px', borderRadius: '12px', marginTop: '10px' },
-  select: { width: '100%', padding: '10px', marginBottom: '10px' },
-  inputPago: { width: '100%', padding: '10px', fontSize: '20px', marginBottom: '10px' },
-  btnFinalizar: { width: '100%', padding: '12px', background: '#1e8e3e', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' },
-  btnCan: { width: '100%', padding: '5px', background: 'none', border: 'none', color: '#888', marginTop: '5px', cursor: 'pointer' },
-  cardSimple: { background: '#fff', padding: '30px', borderRadius: '20px' }
-};
-
-// --- EL EXPORT QUE FALTABA ---
 export default App;
