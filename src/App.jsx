@@ -1,38 +1,48 @@
 import React, { useState, useMemo } from 'react';
 
-const POS_Andres_Final = () => {
+const POS_Andres_Mexico = () => {
   const [vistaActual, setVistaActual] = useState('Inicio');
   const [sucursal, setSucursal] = useState('3B2');
   const [carrito, setCarrito] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [nuevoProd, setNuevoProd] = useState({ id: '', nombre: '', precio: '', costo: '', stock: '', unidad: 'PZA', cat: 'ABARROTES' });
 
-  const logoUrl = "https://lh3.googleusercontent.com/d/1592398516086884693"; // ID de la imagen del logo proporcionado
+  const logoUrl = "https://lh3.googleusercontent.com/d/1592398516086884693"; 
   const misSucursales = ['3B2', '3B3', '3B5', '3B6', '3B7', '3B9', '3B10', 'Fusion'];
+
+  // Base de datos de productos populares en México
+  const [inventario, setInventario] = useState([
+    { id: '7501055300075', unidad: 'PZA', nombre: 'COCA COLA ORIGINAL 600ML', precio: 19, costo: 15, stock: 24, cat: 'BEBIDAS', img: 'https://via.placeholder.com/60?text=Coca' },
+    { id: '7501031311309', unidad: 'PZA', nombre: 'PEPSI COLA 600ML', precio: 17, costo: 13, stock: 12, cat: 'BEBIDAS', img: 'https://via.placeholder.com/60?text=Pepsi' },
+    { id: '7501020515311', unidad: 'PZA', nombre: 'LECHE LALA ENTERA 1L', precio: 28, costo: 24, stock: 30, cat: 'LACTEOS', img: 'https://via.placeholder.com/60?text=Lala' },
+    { id: '7501011131018', unidad: 'PZA', nombre: 'PENAFIEL MINERAL 600ML', precio: 16, costo: 12, stock: 15, cat: 'BEBIDAS', img: 'https://via.placeholder.com/60?text=Mineral' },
+    { id: '7501025400032', unidad: 'PZA', nombre: 'PANDITAS RICOLINO 45G', precio: 15, costo: 11, stock: 20, cat: 'CONFITERIA', img: 'https://via.placeholder.com/60?text=Pandas' },
+    { id: '7501030409854', unidad: 'PZA', nombre: 'NITO DUO 124G', precio: 30, costo: 22, stock: 10, cat: 'PAN DULCE', img: 'https://via.placeholder.com/60?text=Nito' },
+    { id: '7501000153101', unidad: 'PZA', nombre: 'ACEITE CAPULLO 1L', precio: 45, costo: 38, stock: 12, cat: 'ABARROTES', img: 'https://via.placeholder.com/60?text=Aceite' }
+  ]);
 
   const menuOpciones = [
     { nombre: 'Inicio', icono: '🏠', color: '#1a73e8' },
     { nombre: 'Ventas', icono: '📑', color: '#1e8e3e' },
-    { nombre: 'Cotizaciones', icono: '📄', color: '#f9ab00' },
-    { nombre: 'Compras', icono: '🛒', color: '#d93025' },
     { nombre: 'Productos', icono: '📦', color: '#8e24aa' },
     { nombre: 'Clientes', icono: '👤', color: '#00acc1' },
-    { nombre: 'Usuarios', icono: '👥', color: '#5f6368' },
-    { nombre: 'Proveedores', icono: '🚛', color: '#fb8c00' },
-    { nombre: 'Consultas', icono: '📁', color: '#455a64' },
-  ];
-
-  const inventario = [
-    { id: '7501030409854', unidad: 'PZA', nombre: 'NITO DUO 124G', precio: 30, costo: 22, stock: 3, cat: 'BOTANAS', img: 'https://via.placeholder.com/60?text=Nito' },
-    { id: '7501055305704', unidad: 'CAJA', nombre: 'COCA COLA LIGHT 500ML', precio: 20, costo: 15, stock: 6, cat: 'BEBIDAS', img: 'https://via.placeholder.com/60?text=Coke' },
-    { id: '64', unidad: 'PZA', nombre: 'Apotex Omeprazol 2 pcs', precio: 10, costo: 6, stock: 11, cat: 'ABARROTES', img: 'https://via.placeholder.com/60?text=Med' },
+    { nombre: 'Compras', icono: '🛒', color: '#d93025' },
   ];
 
   const filtrados = useMemo(() => {
     return inventario.filter(p => p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || p.id.includes(busqueda));
-  }, [busqueda]);
+  }, [busqueda, inventario]);
 
   const totalVenta = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
+
+  const guardarProducto = (e) => {
+    e.preventDefault();
+    setInventario([...inventario, { ...nuevoProd, precio: parseFloat(nuevoProd.precio), costo: parseFloat(nuevoProd.costo), stock: parseInt(nuevoProd.stock), img: 'https://via.placeholder.com/60?text=Nuevo' }]);
+    setMostrarModal(false);
+    setNuevoProd({ id: '', nombre: '', precio: '', costo: '', stock: '', unidad: 'PZA', cat: 'ABARROTES' });
+  };
 
   const agregarAlCarrito = (p) => {
     const existe = carrito.find(i => i.id === p.id);
@@ -45,7 +55,6 @@ const POS_Andres_Final = () => {
 
   return (
     <div style={styles.appContainer}>
-      {/* SIDEBAR CON LOGO OFICIAL */}
       <aside style={styles.sidebar}>
         <div style={styles.sidebarHeader}>
           <img src={logoUrl} alt="Logo 3B" style={styles.logoImg} />
@@ -56,7 +65,7 @@ const POS_Andres_Final = () => {
         </div>
         <nav style={styles.sidebarNav}>
           {menuOpciones.map((op) => (
-            <button key={op.nombre} onClick={() => {setVistaActual(op.nombre); setBusqueda(''); setProductoSeleccionado(null);}} style={{...styles.navItem, backgroundColor: vistaActual === op.nombre ? '#e8f0fe' : 'transparent', color: vistaActual === op.nombre ? '#1a73e8' : '#5f6368'}}>
+            <button key={op.nombre} onClick={() => {setVistaActual(op.nombre); setBusqueda('');}} style={{...styles.navItem, backgroundColor: vistaActual === op.nombre ? '#e8f0fe' : 'transparent', color: vistaActual === op.nombre ? '#1a73e8' : '#5f6368'}}>
               <span style={styles.navIcon}>{op.icono}</span> {op.nombre}
             </button>
           ))}
@@ -81,7 +90,6 @@ const POS_Andres_Final = () => {
         </header>
 
         <div style={styles.workspace}>
-          {/* MÓDULO INICIO */}
           {vistaActual === 'Inicio' && (
             <div style={styles.inicioGrid}>
               {menuOpciones.filter(o => o.nombre !== 'Inicio').map(op => (
@@ -93,23 +101,22 @@ const POS_Andres_Final = () => {
             </div>
           )}
 
-          {/* MÓDULO VENTAS */}
           {vistaActual === 'Ventas' && (
             <div style={styles.flexLayout}>
               <div style={styles.prodVentaArea}>
-                <input type="text" placeholder="Buscar producto para vender..." style={styles.searchInput} value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} />
+                <input type="text" placeholder="Escanea código o busca nombre..." style={styles.searchInput} value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} autoFocus />
                 <div style={styles.gridVenta}>
                   {filtrados.map(p => (
                     <div key={p.id} style={styles.cardVenta} onClick={() => agregarAlCarrito(p)}>
-                      <img src={p.img} style={styles.imgVenta} alt={p.nombre}/>
+                      <img src={p.img} style={styles.imgVenta} />
                       <b>${p.precio}</b>
-                      <p style={{fontSize:'12px'}}>{p.nombre}</p>
+                      <p style={{fontSize:'11px'}}>{p.nombre}</p>
                     </div>
                   ))}
                 </div>
               </div>
               <aside style={styles.ticketArea}>
-                <div style={styles.ticketHeader}>TICKET</div>
+                <div style={styles.ticketHeader}>LISTA DE COBRO</div>
                 <div style={styles.ticketScroll}>
                   {carrito.map(item => (
                     <div key={item.id} style={styles.ticketRow}>
@@ -119,76 +126,55 @@ const POS_Andres_Final = () => {
                   ))}
                 </div>
                 <div style={styles.ticketTotal}>${totalVenta}.00</div>
-                <button style={styles.btnPagar}>COBRAR</button>
+                <button style={styles.btnPagar}>PAGAR [F10]</button>
               </aside>
             </div>
           )}
 
-          {/* MÓDULO PRODUCTOS CON DETALLES */}
           {vistaActual === 'Productos' && (
             <div style={styles.flexLayout}>
-              <div style={{...styles.prodListaArea, flex: productoSeleccionado ? 1.5 : 3}}>
+              <div style={styles.prodListaArea}>
                 <div style={styles.searchHeader}>
-                  <input type="text" placeholder="Buscar en inventario..." style={styles.searchInput} value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} />
-                  <button style={styles.addBtn}>+</button>
+                  <input type="text" placeholder="Filtrar inventario..." style={styles.searchInput} value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} />
+                  <button onClick={() => setMostrarModal(true)} style={styles.addBtn}>+</button>
                 </div>
                 <div style={styles.prodLista}>
                   {filtrados.map(p => (
-                    <div key={p.id} onClick={() => setProductoSeleccionado(p)} style={{...styles.rowProd, border: productoSeleccionado?.id === p.id ? '2px solid #1a73e8' : '1px solid #dadce0'}}>
-                      <img src={p.img} style={styles.imgLista} alt={p.nombre}/>
+                    <div key={p.id} onClick={() => setProductoSeleccionado(p)} style={styles.rowProd}>
+                      <img src={p.img} style={styles.imgLista} />
                       <div style={{flex:1}}>
                         <div style={styles.metaProd}>{p.unidad} | {p.id}</div>
                         <div style={styles.nombreProd}>{p.nombre}</div>
-                        <div style={styles.stockProd}>En existencia: {p.stock}</div>
+                        <div style={styles.stockProd}>Disp: {p.stock}</div>
                       </div>
                       <div style={styles.precioProd}>${p.precio.toFixed(2)}</div>
                     </div>
                   ))}
                 </div>
               </div>
-              
-              {/* PANEL DE PROPIEDADES (ESTILO SICAR) */}
-              {productoSeleccionado && (
-                <aside style={styles.detallesPanel}>
-                  <div style={styles.detallesHeader}>
-                    <span>Propiedades del Producto</span>
-                    <button onClick={()=>setProductoSeleccionado(null)} style={styles.closeBtn}>✕</button>
-                  </div>
-                  <div style={styles.detallesContent}>
-                    <img src={productoSeleccionado.img} style={styles.detallesImg} alt="preview"/>
-                    <div style={styles.datoGrupo}>
-                      <label>Descripción</label>
-                      <input readOnly value={productoSeleccionado.nombre} style={styles.detallesInput} />
-                    </div>
-                    <div style={styles.datoGrupo}>
-                      <label>Código de Barras</label>
-                      <input readOnly value={productoSeleccionado.id} style={styles.detallesInput} />
-                    </div>
-                    <div style={{display:'flex', gap:'10px'}}>
-                      <div style={styles.datoGrupo}>
-                        <label>Costo</label>
-                        <input readOnly value={`$${productoSeleccionado.costo}`} style={{...styles.detallesInput, color:'#d93025'}} />
-                      </div>
-                      <div style={styles.datoGrupo}>
-                        <label>Precio Venta</label>
-                        <input readOnly value={`$${productoSeleccionado.precio}`} style={{...styles.detallesInput, color:'#1e8e3e'}} />
-                      </div>
-                    </div>
-                    <div style={styles.datoGrupo}>
-                      <label>Departamento / Categoría</label>
-                      <input readOnly value={productoSeleccionado.cat} style={styles.detallesInput} />
-                    </div>
-                    <div style={styles.datoGrupo}>
-                      <label>Unidad de Medida</label>
-                      <input readOnly value={productoSeleccionado.unidad} style={styles.detallesInput} />
-                    </div>
-                  </div>
-                </aside>
-              )}
             </div>
           )}
         </div>
       </main>
+
+      {mostrarModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h3>Nuevo Producto</h3>
+            <form onSubmit={guardarProducto} style={styles.modalForm}>
+              <input placeholder="Código de Barras" required value={nuevoProd.id} onChange={e => setNuevoProd({...nuevoProd, id: e.target.value})} style={styles.formInput} />
+              <input placeholder="Nombre del Producto" required value={nuevoProd.nombre} onChange={e => setNuevoProd({...nuevoProd, nombre: e.target.value})} style={styles.formInput} />
+              <div style={{display:'flex', gap:'10px'}}>
+                <input placeholder="Costo" type="number" required value={nuevoProd.costo} onChange={e => setNuevoProd({...nuevoProd, costo: e.target.value})} style={styles.formInput} />
+                <input placeholder="Precio" type="number" required value={nuevoProd.precio} onChange={e => setNuevoProd({...nuevoProd, precio: e.target.value})} style={styles.formInput} />
+              </div>
+              <input placeholder="Stock Inicial" type="number" required value={nuevoProd.stock} onChange={e => setNuevoProd({...nuevoProd, stock: e.target.value})} style={styles.formInput} />
+              <button type="submit" style={styles.saveBtn}>Guardar en Inventario</button>
+              <button type="button" onClick={() => setMostrarModal(false)} style={styles.cancelBtn}>Cerrar</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -197,59 +183,54 @@ const styles = {
   appContainer: { display: 'flex', height: '100vh', backgroundColor: '#f1f3f4', fontFamily: 'Segoe UI, sans-serif' },
   sidebar: { width: '260px', backgroundColor: '#fff', borderRight: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
   sidebarHeader: { padding: '20px', borderBottom: '1px solid #f1f3f4', display: 'flex', gap: '15px', alignItems: 'center' },
-  logoImg: { width: '50px', height: '50px', borderRadius: '8px', objectFit: 'contain' },
-  sucursalNombre: { fontWeight: 'bold', fontSize: '15px' },
+  logoImg: { width: '50px', height: '50px', objectFit: 'contain' },
+  sucursalNombre: { fontWeight: 'bold' },
   sucursalUbicacion: { fontSize: '10px', color: '#70757a' },
   sidebarNav: { flex: 1, padding: '10px' },
-  navItem: { display: 'flex', alignItems: 'center', width: '100%', padding: '12px', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', marginBottom: '5px', fontSize: '14px' },
-  navIcon: { marginRight: '10px', fontSize: '18px' },
+  navItem: { display: 'flex', alignItems: 'center', width: '100%', padding: '12px', border: 'none', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', marginBottom: '5px' },
+  navIcon: { marginRight: '10px' },
   sidebarFooter: { padding: '20px', borderTop: '1px solid #f1f3f4' },
   userInfo: { display: 'flex', alignItems: 'center', gap: '10px' },
-  userAvatar: { width: '35px', height: '35px', backgroundColor: '#1a73e8', color: '#fff', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold' },
+  userAvatar: { width: '30px', height: '30px', backgroundColor: '#1a73e8', color: '#fff', borderRadius: '50%', textAlign:'center', lineHeight:'30px', fontWeight:'bold' },
   userName: { fontSize: '14px', fontWeight: 'bold' },
   userRole: { fontSize: '11px', color: '#70757a' },
   mainContent: { flex: 1, display: 'flex', flexDirection: 'column' },
   topBar: { height: '60px', backgroundColor: '#fff', borderBottom: '1px solid #dadce0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' },
   viewTitle: { fontSize: '18px', color: '#1a73e8', fontWeight: 'bold' },
-  selectTop: { padding: '5px', borderRadius: '4px', border: '1px solid #dadce0' },
+  selectTop: { padding: '5px', borderRadius: '4px' },
   workspace: { flex: 1, overflow: 'hidden' },
   flexLayout: { display: 'flex', height: '100%' },
-  // INICIO
   inicioGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', padding: '50px' },
-  moduloCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '30px', border: '1px solid #dadce0', cursor: 'pointer', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+  moduloCard: { backgroundColor: '#fff', borderRadius: '12px', padding: '30px', border: '1px solid #dadce0', cursor: 'pointer', textAlign: 'center' },
   moduloIcon: { fontSize: '40px', marginBottom: '10px' },
   moduloNombre: { fontWeight: 'bold' },
-  // PRODUCTOS
-  prodListaArea: { padding: '20px', overflowY: 'auto', borderRight: '1px solid #dadce0' },
-  searchHeader: { display: 'flex', gap: '10px', marginBottom: '20px' },
-  searchInput: { flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #dadce0' },
-  addBtn: { width: '50px', backgroundColor: '#1e8e3e', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '24px', cursor: 'pointer' },
-  prodLista: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  rowProd: { display: 'flex', gap: '15px', backgroundColor: '#fff', padding: '15px', borderRadius: '12px', alignItems: 'center', cursor: 'pointer' },
-  imgLista: { width: '50px', height: '50px', borderRadius: '8px' },
-  metaProd: { fontSize: '11px', color: '#70757a' },
-  nombreProd: { fontWeight: 'bold' },
-  stockProd: { fontSize: '12px', color: '#1a73e8' },
-  precioProd: { fontSize: '18px', fontWeight: 'bold' },
-  // PANEL DETALLES
-  detallesPanel: { width: '400px', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #dadce0' },
-  detallesHeader: { padding: '15px', backgroundColor: '#f8f9fa', borderBottom: '1px solid #dadce0', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' },
-  closeBtn: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' },
-  detallesContent: { padding: '20px', overflowY: 'auto' },
-  detallesImg: { width: '120px', height: '120px', borderRadius: '8px', margin: '0 auto 20px auto', display: 'block', border: '1px solid #eee' },
-  datoGrupo: { marginBottom: '15px', flex: 1 },
-  detallesInput: { width: '100%', padding: '8px', marginTop: '5px', borderRadius: '4px', border: '1px solid #ddd', backgroundColor: '#f9f9f9', outline: 'none' },
-  // VENTAS
   prodVentaArea: { flex: 1, padding: '20px', overflowY: 'auto' },
-  gridVenta: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '15px', marginTop: '15px' },
+  gridVenta: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '15px', marginTop: '15px' },
   cardVenta: { backgroundColor: '#fff', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid #dadce0', cursor: 'pointer' },
-  imgVenta: { width: '100%', height: '80px', objectFit: 'cover', borderRadius: '4px' },
-  ticketArea: { width: '320px', backgroundColor: '#fff', borderLeft: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
+  imgVenta: { width: '100%', height: '70px', objectFit: 'cover', borderRadius: '4px' },
+  ticketArea: { width: '300px', backgroundColor: '#fff', borderLeft: '1px solid #dadce0', display: 'flex', flexDirection: 'column' },
   ticketHeader: { padding: '15px', fontWeight: 'bold', borderBottom: '1px solid #dadce0' },
   ticketScroll: { flex: 1, padding: '15px', overflowY: 'auto' },
-  ticketRow: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' },
-  ticketTotal: { padding: '20px', textAlign: 'right', fontWeight: 'bold', fontSize: '32px', color: '#1a73e8' },
-  btnPagar: { margin: '15px', padding: '15px', backgroundColor: '#1e8e3e', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }
+  ticketRow: { display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px' },
+  ticketTotal: { padding: '20px', textAlign: 'right', fontWeight: 'bold', fontSize: '28px', color: '#1a73e8' },
+  btnPagar: { margin: '15px', padding: '15px', backgroundColor: '#1e8e3e', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold' },
+  prodListaArea: { flex: 1, padding: '20px', overflowY: 'auto' },
+  searchHeader: { display: 'flex', gap: '10px', marginBottom: '20px' },
+  searchInput: { flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #dadce0' },
+  addBtn: { width: '50px', backgroundColor: '#1e8e3e', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '24px' },
+  prodLista: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  rowProd: { display: 'flex', gap: '15px', backgroundColor: '#fff', padding: '12px', borderRadius: '10px', border: '1px solid #dadce0', alignItems:'center' },
+  imgLista: { width: '45px', height: '45px', borderRadius: '6px' },
+  metaProd: { fontSize: '10px', color: '#70757a' },
+  nombreProd: { fontWeight: 'bold', fontSize:'14px' },
+  stockProd: { fontSize: '11px', color: '#1a73e8' },
+  precioProd: { fontSize: '16px', fontWeight: 'bold' },
+  modalOverlay: { position: 'fixed', top:0, left:0, width:'100%', height:'100%', backgroundColor:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center', alignItems:'center', zIndex:1000 },
+  modalContent: { backgroundColor:'#fff', width:'400px', borderRadius:'12px', padding:'25px' },
+  modalForm: { display:'flex', flexDirection:'column', gap:'15px' },
+  formInput: { padding: '10px', borderRadius: '6px', border: '1px solid #dadce0' },
+  saveBtn: { padding: '12px', backgroundColor: '#1e8e3e', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold' },
+  cancelBtn: { padding: '8px', backgroundColor: '#eee', border: 'none', borderRadius: '6px' }
 };
 
-export default POS_Andres_Final;
+export default POS_Andres_Mexico;
